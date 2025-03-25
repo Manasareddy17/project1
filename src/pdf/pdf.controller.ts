@@ -11,7 +11,7 @@ export class PdfController {
   async generateDynPdf(@Query('hasIgst') hasIgst: boolean, @Res() res: Response, @Body() body: any) {
 
     const data = {
-      hasIgst: false,
+      hasIgst: true,
       buyerDetails: {
         name: "Hyderabad Construction Company",
         addressLine1: "Hyderabad Address Line - 11 Hyderabad Address Line - 2",
@@ -70,7 +70,7 @@ export class PdfController {
  @Get('generateStaticPdf')
  async genratestcPdf(@Query('hasIgst') hasIgst: boolean, @Res() res: Response){
   const data = {
-    hasIgst: false,
+    hasIgst: true,
     buyerDetails: {
       name: "Hyderabad Construction Company",
       addressLine1: "Hyderabad Address Line - 11 Hyderabad Address Line - 2",
@@ -84,7 +84,7 @@ export class PdfController {
       purchaseNumber: "PO/2024/12/000006",
       purchaseDate: "26-Dec-2024",
       terms: "Credit",
-      creditDays: "90",
+      creditDays: "90", 
       placeofSupply: "Hyderabad",
       expectedShipmentDate: "31-Dec-2024",
       deliveryAddressString: "Hyderabad Address Line - 11,",
@@ -133,28 +133,28 @@ export class PdfController {
       { sno: 6, name: "Material 6", hsn: 123443, qty: 7, rate: 90.00, total: 2100 },
       { sno: 7, name: "Material 7", hsn: 123443, qty: 10, rate: 90.00, total: 750 },
       { sno: 8, name: "Material 8", hsn: 123443, qty: 12, rate: 90.00, total: 1440 },
-      { sno: 9, name: "Material 9", hsn: 123443, qty: 6, rate: 90.00, total: 480 },
+      { sno: 9, name: "Material 9Material 10Material 10Material 10", hsn: 123443, qty: 6, rate: 90.00, total: 480 },
       { sno: 10, name: "Material 10", hsn: 123443, qty: 9, rate: 90.00, total: 810 },
       { sno: 1, name: "Material 1", hsn: 123443, qty: 10, rate: 90.00, total: 1000 },
       { sno: 2, name: "Material 2", hsn: 123443, qty: 5, rate: 90.00, total: 1000 },
       { sno: 3, name: "Material 3", hsn: 123443, qty: 20, rate: 90.00, total: 1000 },
-      { sno: 4, name: "Material 4", hsn: 123443, qty: 8, rate: 90.00, total: 1200 },
+      { sno: 4, name: "Material 4Material 10Material 10Material 10", hsn: 123443, qty: 8, rate: 90.00, total: 1200 },
       { sno: 5, name: "Material 5", hsn: 123443, qty: 15, rate: 90.00, total: 900 },
       { sno: 6, name: "Material 6", hsn: 123443, qty: 7, rate: 90.00, total: 2100 },
-      { sno: 7, name: "Material 7", hsn: 123443, qty: 10, rate: 90.00, total: 750 },
-      { sno: 8, name: "Material 8", hsn: 123443, qty: 12, rate: 90.00, total: 1440 },
-      { sno: 9, name: "Material 9", hsn: 123443, qty: 6, rate: 90.00, total: 480 },
-      { sno: 10, name: "Material 10", hsn: 123443, qty: 9, rate: 90.00, total: 810 },
-      { sno: 1, name: "Material 1", hsn: 123443, qty: 10, rate: 90.00, total: 1000 },
-      { sno: 2, name: "Material 2", hsn: 123443, qty: 5, rate: 90.00, total: 1000 },
-      { sno: 3, name: "Material 3", hsn: 123443, qty: 20, rate: 90.00, total: 1000 },
-      { sno: 4, name: "Material 4", hsn: 123443, qty: 8, rate: 90.00, total: 1200 },
+     { sno: 7, name: "Material 7Material 10", hsn: 123443, qty: 10, rate: 90.00, total: 750 },
+     { sno: 8, name: "Material 8", hsn: 123443, qty: 12, rate: 90.00, total: 1440 },
+       { sno: 9, name: "Material 9", hsn: 123443, qty: 6, rate: 90.00, total: 480 },
+        { sno: 10, name: "Material 10Material 10Material 10", hsn: 123443, qty: 9, rate: 90.00, total: 810 },
+       { sno: 1, name: "Material 1", hsn: 123443, qty: 10, rate: 90.00, total: 1000 },
+      // { sno: 2, name: "Material 2", hsn: 123443, qty: 5, rate: 90.00, total: 1000 },
+      // { sno: 3, name: "Material 3", hsn: 123443, qty: 20, rate: 90.00, total: 1000 },
+      // { sno: 4, name: "Material 4", hsn: 123443, qty: 8, rate: 90.00, total: 1200 },
       // { sno: 5, name: "Material 5", hsn:123443,qty: 15, rate:90.00, total: 900 },
       // { sno: 6, name: "Material 6", hsn:123443,qty: 7, rate:90.00, total: 2100 },
       // { sno: 7, name: "Material 7", hsn:123443,qty: 10, rate:90.00, total: 750 },
       // { sno: 8, name: "Material 8", hsn:123443,qty: 12, rate:90.00, total: 1440 },
       // { sno: 9, name: "Material 9", hsn:123443,qty: 6, rate:90.00, total: 480 },
-      // { sno: 10, name: "Material 10", hsn:123443,qty: 9, rate:90.00, total: 810 },
+      // // { sno: 10, name: "Material 10", hsn:123443,qty: 9, rate:90.00, total: 810 },
 
 
     ]
@@ -174,5 +174,5 @@ export class PdfController {
   }
   
  }
-
+   
 }

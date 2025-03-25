@@ -2,17 +2,17 @@ import { Injectable, Logger } from "@nestjs/common";
 import { PdfFunctionsService } from "./pdfFunctions.service";
 import { jsPDF } from "jspdf";
 import 'jspdf-autotable';
-import { addFooter, addStaticContentAfterTable, generateTable, sample } from "./dynamicFun.service";
+import { addFooter, addStaticContentAfterExtractTable, addStaticContentAfterTable, renderRemainingDYnRows, renderRemainingRows, sample } from "./dynamicFun.service";
 import { addBorderToAllPages } from "./dynamicFun.service";
 import axios from "axios";
 import { title } from "process";
 import { Column } from "typeorm";
-import { KeyObject } from "crypto";
+// import { KeyObject } from "crypto";
 @Injectable()
 export class PdfService {
   constructor(private readonly pdfFunctionsService: PdfFunctionsService) { }
   private logger = new Logger(this.constructor.name);
- 
+
 
 
   async generate(hasIgst, data, body): Promise<Buffer> {
@@ -21,7 +21,7 @@ export class PdfService {
     const SupplierDetails = data.supplierDetails;
 
     const doc = new jsPDF();
-    const imageUrl = 'https://i.imgur.com/H35ypbu.png';
+    const imageUrl = 'https://imgur.com/gpIvJ1r.png';
     try {
 
       const imageResponse = await axios.get(imageUrl, { responseType: 'arraybuffer' });
@@ -29,17 +29,14 @@ export class PdfService {
       const img = 'data:image/png;base64,' + imageBuffer.toString('base64');
 
       // Add the image to the PDF
-      doc.addImage(img, 'PNG', 3, -5, 30, 20);
 
-      // const mainSection = body.mainSection
-      // console.log(mainSection)
       const { title, SecondSectionOrgAddress, SecondSecBoldOrgAdress, MainSectionOrgAddress, addSectionHeader } = sample();
 
       const pageWidth = doc.internal.pageSize.width;
       const pageHeight = doc.internal.pageSize.height;
 
       addBorderToAllPages(doc);
-      
+
       title(doc, body.title);
       //--------buyer details----------------------
       doc.setFont("helvetica", "bold");
@@ -59,7 +56,7 @@ export class PdfService {
       doc.line(verticalLineX, 57, verticalLineX, pageHeight - 200);
 
       //--------purchase details----------------------------------
-    //  console.log(body.prOrder)
+
       MainSectionOrgAddress(doc, 60, body.prOrder)
 
       //---purchase order details---------------------------
@@ -99,7 +96,7 @@ export class PdfService {
         SupplierDetails.cin,
       ]);
 
-     
+
       const generateTable = (doc, data, hasIgst, startY) => {
         this.logger.debug(`generateTable called with hasIgst: ${hasIgst}`);
         console.log(hasIgst)
@@ -114,7 +111,7 @@ export class PdfService {
         console.log("columns", columns1);
         const columns = Object.values(igst);
         console.log("columns22", JSON.stringify(columns));
-        const rows = data.materials.map((item) => {
+        let rows = data.materials.map((item) => {
           if (hasIgst) {
             const value = columns.map((e: any) => item[e]);
             console.log("value", value);
@@ -130,7 +127,10 @@ export class PdfService {
           }
         })
 
-        console.log("rows", rows);
+        const extractedRows = rows.slice(-2);
+        console.log("extractedRows",extractedRows)
+        rows = rows.slice(0, -2);
+        console.log("rows",rows)
 
         doc.autoTable({
           startY,
@@ -161,16 +161,24 @@ export class PdfService {
           tableWidth: (pageWidth - 20),  // Make the table width span the entire page
           margin: { top: 10.59, bottom: 25, left: 10, right: 10 },
 
+          didDrawPage: function (data) {
+            const tableEndY = data.cursor.y; // Get the Y position where the table ends
+            doc.addImage(img, 'JPEG', 10, 0, 15, 10);
+            addFooter(doc);
+            addBorderToAllPages(doc);
+          },
         });
         const finalY = doc.lastAutoTable.finalY;
         const remainingHeight = doc.internal.pageSize.height - finalY - 50;
 
         if (remainingHeight < 30) {
-          doc.addPage(); // If not enough space, move to next page
-          addStaticContentAfterTable(doc, 20); // Start from top on next page
+         doc.addPage(); 
+         const lastRowPosition= renderRemainingDYnRows(doc,extractedRows,columns)
+         addStaticContentAfterExtractTable(doc, lastRowPosition); // Start from top on next page
         } else {
           addStaticContentAfterTable(doc, finalY); // Continue from where the table ended
         }
+        doc.addImage(img, 'JPEG', 10, 0, 15, 10);;
         addFooter(doc);
         addBorderToAllPages(doc);
 
@@ -194,29 +202,27 @@ export class PdfService {
     const SupplierDetails = data.supplierDetails;
 
     const doc = new jsPDF();
-    const imageUrl = 'https://i.imgur.com/H35ypbu.png';
+    const imageUrl = 'https://imgur.com/gpIvJ1r.png';
+
     try {
 
       const imageResponse = await axios.get(imageUrl, { responseType: 'arraybuffer' });
       const imageBuffer = Buffer.from(imageResponse.data, 'binary');
       const img = 'data:image/png;base64,' + imageBuffer.toString('base64');
 
-      // Add the image to the PDF
-      doc.addImage(img, 'PNG', 3, -5, 30, 20);
-
-      // const mainSection = body.mainSection
-      // console.log(mainSection)
-      const { title, SecondSectionOrgAddress, SecondSecBoldOrgAdress, MainSectionOrgAddress, addSectionHeader } = sample();
+      const { SecondSectionOrgAddress, SecondSecBoldOrgAdress, MainSectionOrgAddress, addSectionHeader } = sample();
 
       const pageWidth = doc.internal.pageSize.width;
       const pageHeight = doc.internal.pageSize.height;
 
       addBorderToAllPages(doc);
+
+
       doc.setFont("helvetica", "bold");
       doc.setFontSize(20);
 
       doc.text("PURCHASE ORDER", pageWidth - 30, 40, { align: "right" });;
-     
+
       //--------buyer details----------------------
       doc.setFont("helvetica", "bold");
       doc.setFontSize(8);
@@ -236,7 +242,7 @@ export class PdfService {
 
       //--------purchase details----------------------------------
 
-      MainSectionOrgAddress(doc, 60,[
+      MainSectionOrgAddress(doc, 60, [
         `Purchase Order Number:`,
         `Purchase Order Date:`,
         `Payment Terms:`,
@@ -254,7 +260,7 @@ export class PdfService {
         `Contact Person`,
         `Mobile Number`
       ])
-       
+
 
       //---purchaseOrder details left side---------------------------
       SecondSecBoldOrgAdress(doc, [
@@ -290,7 +296,7 @@ export class PdfService {
         this.logger.debug(`generateTable called with hasIgst: ${hasIgst}`);
         const pageWidth = doc.internal.pageSize.width;
         const columns = hasIgst
-         ? ["S.No", "Material Name", "HSN/SAC", "Qty", "Rate", { content: "IGST", colSpan: 2 }, "Total"]:
+          ? ["S.No", "Material Name", "HSN/SAC", "Qty", "Rate", { content: "IGST", colSpan: 2 }, "Total"] :
           ["S.No", "Material Name", "HSN/SAC", "Qty", "Rate", { content: "CGST", colSpan: 2 }, { content: "SGST", colSpan: 2 }, "Total"];
 
 
@@ -301,17 +307,11 @@ export class PdfService {
         console.log("columns", JSON.stringify(columns), JSON.stringify(subHeaders));
 
 
-        const rows = data.materials1.map((item) => {
+        let rows = data.materials1.map((item) => {
           const taxRate = 0.06; // Example: 5% CGST and 5% SGST
           const igstRate = 0.12;
           if (hasIgst) {
             console.log(hasIgst);
-            const arr = [{
-              "S.no": "sno",
-              "ProductName": "name",
-          }];
-          const key = arr[0]["S.no"];
-
             const igst = item.total * igstRate;
             return [
               item.sno,
@@ -341,9 +341,14 @@ export class PdfService {
           }
         })
 
+        const extractedRows = rows.slice(-2);
+        console.log("extractedRows",extractedRows)
+        rows = rows.slice(0, -2);
+        console.log("rows",rows)
         doc.autoTable({
+          pageBreak: 'auto',
           startY,
-          head: [columns,subHeaders],
+          head: [columns, subHeaders],
           body: rows,
           headStyles: {
             lineWidth: 0,
@@ -370,31 +375,45 @@ export class PdfService {
           tableWidth: (pageWidth - 20),  // Make the table width span the entire page
           margin: { top: 10.59, bottom: 25, left: 10, right: 10 },
 
+          didDrawPage: function (data) {
+            const tableEndY = data.cursor.y;
+            doc.addImage(img, 'JPEG', 10, 0, 15, 10);
+            addBorderToAllPages(doc);
+            addFooter(doc);
+
+          }
+
         });
+
         const finalY = doc.lastAutoTable.finalY;
         const remainingHeight = doc.internal.pageSize.height - finalY - 50;
-
-        if (remainingHeight < 30) {
-          doc.addPage(); // If not enough space, move to next page
-          addStaticContentAfterTable(doc, 20); // Start from top on next page
+        console.log("remainingHeight", remainingHeight)
+        if (remainingHeight < 25) {
+          doc.addPage();
+          const lastRowYPosition = renderRemainingRows(doc, extractedRows, subHeaders, columns);
+          console.log("lastRowPosition", lastRowYPosition)
+          addStaticContentAfterExtractTable(doc, lastRowYPosition);
         } else {
-          addStaticContentAfterTable(doc, finalY); // Continue from where the table ended
+          // Add static content directly after the table if there's enough space on the page
+          addStaticContentAfterTable(doc, finalY);
         }
         addFooter(doc);
-        addBorderToAllPages(doc);
+        doc.addImage(img, 'JPEG', 10, 0, 15, 10);
 
+        addBorderToAllPages(doc);
       };
+
       generateTable(doc, data, hasIgst, 145);
 
       const pdfBuffer = doc.output('arraybuffer');
       return Buffer.from(pdfBuffer);
     }
-
+    
     catch (err) {
       this.logger.error('error', err);
       throw err
     }
 
   }
- 
+
 }
